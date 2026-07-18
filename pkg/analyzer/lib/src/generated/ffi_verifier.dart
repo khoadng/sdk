@@ -130,13 +130,20 @@ class FfiVerifier extends RecursiveAstVisitor2<void> {
   void visitClassDeclaration(covariant ClassDeclarationImpl node) {
     inCompound = false;
     compound = null;
-    // Only the Allocator, Opaque and Struct class may be extended.
+    // Some FFI classes may only be extended directly.
+    NamedType? directExtensionFfiSuperclass;
     var extendsClause = node.extendsClause;
     if (extendsClause != null) {
       NamedType superclass = extendsClause.superclass;
       var ffiClass = superclass.ffiClass;
       if (ffiClass != null) {
         var className = ffiClass.name;
+        if (className == _opaqueClassName ||
+            className == _structClassName ||
+            className == _unionClassName ||
+            className == _abiSpecificIntegerClassName) {
+          directExtensionFfiSuperclass = superclass;
+        }
         if (className == _structClassName || className == _unionClassName) {
           inCompound = true;
           compound = node;
@@ -204,7 +211,19 @@ class FfiVerifier extends RecursiveAstVisitor2<void> {
     var withClause = node.withClause;
     if (withClause != null) {
       for (NamedType type in withClause.mixinTypes) {
-        checkSupertype(type, diag.subtypeOfStructClassInWith);
+        if (directExtensionFfiSuperclass != null) {
+          _diagnosticReporter.report(
+            diag.mixinApplicationToFfiClass
+                .withArguments(
+                  subclassName: node.namePart.typeName.lexeme,
+                  mixinName: type.name.lexeme,
+                  superclassName: directExtensionFfiSuperclass.name.lexeme,
+                )
+                .at(type),
+          );
+        } else {
+          checkSupertype(type, diag.subtypeOfStructClassInWith);
+        }
       }
     }
 

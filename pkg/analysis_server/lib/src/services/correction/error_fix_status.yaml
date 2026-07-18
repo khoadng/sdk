@@ -1180,6 +1180,8 @@ mixin_application_no_concrete_super_invoked_setter:
   status: noFix
 mixin_application_not_implemented_interface:
   status: hasFix
+mixin_application_to_ffi_class:
+  status: needsEvaluation
 mixin_class_declaration_extends_not_object:
   status: hasFix
 mixin_class_declaration_with_clause:

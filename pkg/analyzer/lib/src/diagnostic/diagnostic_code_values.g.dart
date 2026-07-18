@@ -718,6 +718,7 @@ const List<DiagnosticCode> diagnosticCodeValues = [
   diag.mixinApplicationNoConcreteSuperInvokedMember,
   diag.mixinApplicationNoConcreteSuperInvokedSetter,
   diag.mixinApplicationNotImplementedInterface,
+  diag.mixinApplicationToFfiClass,
   diag.mixinClassDeclarationExtendsNotObject,
   diag.mixinClassDeclarationWithClause,
   diag.mixinClassDeclaresNonTrivialGenerativeConstructor,

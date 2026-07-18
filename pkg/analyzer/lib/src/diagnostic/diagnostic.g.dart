@@ -11170,6 +11170,34 @@ mixinApplicationNotImplementedInterface = DiagnosticWithArguments(
 );
 
 /// Parameters:
+/// String subclassName: the name of the subclass
+/// String mixinName: the name of the mixin being applied
+/// String superclassName: the name of the class being extended
+const DiagnosticWithArguments<
+  LocatableDiagnostic Function({
+    required String subclassName,
+    required String mixinName,
+    required String superclassName,
+  })
+>
+mixinApplicationToFfiClass = DiagnosticWithArguments(
+  name: 'mixin_application_to_ffi_class',
+  problemMessage:
+      "The class '{0}' can't mix in '{1}' because subclasses of '{2}' must "
+      "extend '{2}' directly.",
+  correctionMessage: "Try removing '{1}' from the class.",
+  hasPublishedDocs: true,
+  type: DiagnosticType.COMPILE_TIME_ERROR,
+  uniqueName: 'mixin_application_to_ffi_class',
+  withArguments: _withArgumentsMixinApplicationToFfiClass,
+  expectedTypes: [
+    ExpectedType.string,
+    ExpectedType.string,
+    ExpectedType.string,
+  ],
+);
+
+/// Parameters:
 /// String name: the name of the mixin class that is invalid
 const DiagnosticWithArguments<
   LocatableDiagnostic Function({required String name})
@@ -21005,6 +21033,18 @@ LocatableDiagnostic _withArgumentsMixinApplicationNotImplementedInterface({
     mixinType,
     superType,
     notImplementedType,
+  ]);
+}
+
+LocatableDiagnostic _withArgumentsMixinApplicationToFfiClass({
+  required String subclassName,
+  required String mixinName,
+  required String superclassName,
+}) {
+  return LocatableDiagnosticImpl(diag.mixinApplicationToFfiClass, [
+    subclassName,
+    mixinName,
+    superclassName,
   ]);
 }
 

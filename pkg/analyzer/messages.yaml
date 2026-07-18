@@ -22861,6 +22861,42 @@ FfiCode:
     problemMessage: "The class '#subclassName' can't implement '#superclassName' because '#superclassName' is a subtype of 'Struct', 'Union', or 'AbiSpecificInteger'."
     correctionMessage: "Try extending 'Struct', 'Union', or 'AbiSpecificInteger' directly."
     hasPublishedDocs: true
+  mixinApplicationToFfiClass:
+    type: compileTimeError
+    parameters:
+      String subclassName: the name of the subclass
+      String mixinName: the name of the mixin being applied
+      String superclassName: the name of the class being extended
+    problemMessage: "The class '#subclassName' can't mix in '#mixinName' because subclasses of '#superclassName' must extend '#superclassName' directly."
+    correctionMessage: "Try removing '#mixinName' from the class."
+    hasPublishedDocs: true
+    documentation: |-
+      #### Description
+
+      The analyzer produces this diagnostic when a class applies a mixin while
+      extending `Opaque`, `Struct`, `Union`, or `AbiSpecificInteger`. These FFI
+      classes may only be extended directly, but applying a mixin introduces an
+      intermediate superclass.
+
+      #### Example
+
+      The following code produces this diagnostic because `C` applies the mixin
+      `M` while extending `Struct`:
+
+      ```dart
+      import 'dart:ffi';
+
+      base mixin M on Struct {}
+
+      final class C extends Struct with [!M!] {
+        external Pointer<Void> field;
+      }
+      ```
+
+      #### Common fixes
+
+      Remove the mixin application. If the mixin declares members needed by the
+      FFI class, declare those members directly in the class instead.
   subtypeOfStructClassInWith:
     type: compileTimeError
     parameters:
