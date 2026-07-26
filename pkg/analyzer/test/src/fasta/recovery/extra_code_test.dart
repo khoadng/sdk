@@ -74,7 +74,21 @@ CompilationUnit
               rightParenthesis: )
             body: ExpressionFunctionBody
               functionDefinition: =>
-              expression2: InstanceCreationExpression
+              expression2: ConstructorInvocation
+                keyword: new
+                constructorReference: ConstructorReference2
+                  typeReference: ConstructorTypeReference
+                    name: A
+                    typeArguments: TypeArgumentList
+                      leftBracket: <
+                      arguments
+                        NamedType
+                          name: C
+                      rightBracket: >
+                argumentList: ArgumentList
+                  leftParenthesis: (
+                  rightParenthesis: )
+              expression(v1): InstanceCreationExpression
                 keyword: new
                 constructorName: ConstructorName
                   type: NamedType
@@ -406,20 +420,26 @@ CompilationUnit
             initializers
               RedirectingConstructorInvocation
                 thisKeyword: this
+                constructorSelector: ConstructorSelector
+                  period: .
+                  name2: a
+                argumentList: ArgumentList
+                  leftParenthesis: (
+                  rightParenthesis: )
                 period: .
                 constructorName: SimpleIdentifier
                   token: a
+              RedirectingConstructorInvocation
+                thisKeyword: this
+                constructorSelector: ConstructorSelector
+                  period: .
+                  name2: b
                 argumentList: ArgumentList
                   leftParenthesis: (
                   rightParenthesis: )
-              RedirectingConstructorInvocation
-                thisKeyword: this
                 period: .
                 constructorName: SimpleIdentifier
                   token: b
-                argumentList: ArgumentList
-                  leftParenthesis: (
-                  rightParenthesis: )
             body: EmptyFunctionBody
               semicolon: ;
           ConstructorDeclaration
@@ -494,7 +514,15 @@ CompilationUnit
                       rightParenthesis: )
                     body: ExpressionFunctionBody
                       functionDefinition: =>
-                      expression2: InstanceCreationExpression
+                      expression2: ConstructorInvocation
+                        keyword: new
+                        constructorReference: ConstructorReference2
+                          typeReference: ConstructorTypeReference
+                            name: C
+                        argumentList: ArgumentList
+                          leftParenthesis: (
+                          rightParenthesis: )
+                      expression(v1): InstanceCreationExpression
                         keyword: new
                         constructorName: ConstructorName
                           type: NamedType
@@ -512,7 +540,15 @@ CompilationUnit
                       rightParenthesis: )
                     body: ExpressionFunctionBody
                       functionDefinition: =>
-                      expression2: InstanceCreationExpression
+                      expression2: ConstructorInvocation
+                        keyword: new
+                        constructorReference: ConstructorReference2
+                          typeReference: ConstructorTypeReference
+                            name: C
+                        argumentList: ArgumentList
+                          leftParenthesis: (
+                          rightParenthesis: )
+                      expression(v1): InstanceCreationExpression
                         keyword: new
                         constructorName: ConstructorName
                           type: NamedType

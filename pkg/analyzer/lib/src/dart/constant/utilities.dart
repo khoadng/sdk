@@ -27,6 +27,15 @@ class ConstantExpressionsDependenciesFinder extends RecursiveAstVisitor2 {
   }
 
   @override
+  void visitConstructorInvocation(ConstructorInvocation node) {
+    if (node.isConst) {
+      _find(node);
+    } else {
+      super.visitConstructorInvocation(node);
+    }
+  }
+
+  @override
   void visitDotShorthandConstructorInvocation(
     DotShorthandConstructorInvocation node,
   ) {
@@ -34,15 +43,6 @@ class ConstantExpressionsDependenciesFinder extends RecursiveAstVisitor2 {
       _find(node);
     } else {
       super.visitDotShorthandConstructorInvocation(node);
-    }
-  }
-
-  @override
-  void visitInstanceCreationExpression(InstanceCreationExpression node) {
-    if (node.isConst) {
-      _find(node);
-    } else {
-      super.visitInstanceCreationExpression(node);
     }
   }
 
@@ -184,7 +184,7 @@ class ConstantFinder extends RecursiveAstVisitor2<void> {
     constantsToCompute.add(element);
 
     configuration.addErrorNode(
-      fromElement: element.constantInitializer,
+      fromElement: element.constantInitializer2,
       fromAst: node,
     );
   }
@@ -220,7 +220,7 @@ class ConstantFinder extends RecursiveAstVisitor2<void> {
                 !element.isStatic)) {
       constantsToCompute.add(element);
       // Fill error nodes.
-      if (element.constantInitializer case var constantInitializer?) {
+      if (element.constantInitializer2 case var constantInitializer?) {
         configuration.addErrorNode(
           fromElement: constantInitializer,
           fromAst: node.initializer2,
@@ -249,6 +249,17 @@ class ReferenceFinder extends RecursiveAstVisitor2<void> {
   ReferenceFinder(this._callback);
 
   @override
+  void visitConstructorInvocation(covariant ConstructorInvocationImpl node) {
+    if (node.isConst) {
+      var constructor = node.constructorReference.element?.baseElement;
+      if (constructor != null && constructor.isConst) {
+        _callback(constructor);
+      }
+    }
+    super.visitConstructorInvocation(node);
+  }
+
+  @override
   void visitDotShorthandConstructorInvocation(
     covariant DotShorthandConstructorInvocationImpl node,
   ) {
@@ -259,19 +270,6 @@ class ReferenceFinder extends RecursiveAstVisitor2<void> {
       }
     }
     super.visitDotShorthandConstructorInvocation(node);
-  }
-
-  @override
-  void visitInstanceCreationExpression(
-    covariant InstanceCreationExpressionImpl node,
-  ) {
-    if (node.isConst) {
-      var constructor = node.constructorName.element?.baseElement;
-      if (constructor != null && constructor.isConst) {
-        _callback(constructor);
-      }
-    }
-    super.visitInstanceCreationExpression(node);
   }
 
   @override

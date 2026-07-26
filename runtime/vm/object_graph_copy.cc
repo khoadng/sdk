@@ -120,9 +120,15 @@ struct PtrTypes {
 
 #define DO(V)                                                                  \
   using V = V##Ptr;                                                            \
-  static Untagged##V* Untag##V(V##Ptr arg) { return arg.untag(); }             \
-  static V##Ptr Get##V##Ptr(V##Ptr arg) { return arg; }                        \
-  static V##Ptr Cast##V(ObjectPtr arg) { return dart::V::RawCast(arg); }
+  static Untagged##V* Untag##V(V##Ptr arg) {                                   \
+    return arg.untag();                                                        \
+  }                                                                            \
+  static V##Ptr Get##V##Ptr(V##Ptr arg) {                                      \
+    return arg;                                                                \
+  }                                                                            \
+  static V##Ptr Cast##V(ObjectPtr arg) {                                       \
+    return dart::V::RawCast(arg);                                              \
+  }
   CLASS_LIST_FOR_HANDLES(DO)
 #undef DO
 };
@@ -137,9 +143,15 @@ struct HandleTypes {
 
 #define DO(V)                                                                  \
   using V = const dart::V&;                                                    \
-  static Untagged##V* Untag##V(V arg) { return arg.ptr().untag(); }            \
-  static V##Ptr Get##V##Ptr(V arg) { return arg.ptr(); }                       \
-  static V Cast##V(const dart::Object& arg) { return dart::V::Cast(arg); }
+  static Untagged##V* Untag##V(V arg) {                                        \
+    return arg.ptr().untag();                                                  \
+  }                                                                            \
+  static V##Ptr Get##V##Ptr(V arg) {                                           \
+    return arg.ptr();                                                          \
+  }                                                                            \
+  static V Cast##V(const dart::Object& arg) {                                  \
+    return dart::V::Cast(arg);                                                 \
+  }
   CLASS_LIST_FOR_HANDLES(DO)
 #undef DO
 };
@@ -170,7 +182,15 @@ static bool CanShareObject(ObjectPtr obj, uword tags) {
 
     if (cid == kClosureCid) {
       // We can share a closure iff it doesn't close over any state.
-      return Closure::RawContextOf(Closure::RawCast(obj)) == Object::null();
+      const ClosurePtr closure = Closure::RawCast(obj);
+      for (intptr_t i = Closure::ContextIndexOf(closure),
+                    n = Closure::LengthOf(closure);
+           i < n; ++i) {
+        if (closure->untag()->element(i) != Object::null()) {
+          return false;
+        }
+      }
+      return true;
     }
 
     // All other objects that have immutability bit set are deeply immutable.

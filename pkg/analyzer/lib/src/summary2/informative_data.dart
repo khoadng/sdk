@@ -1736,7 +1736,7 @@ class _OffsetsApplier extends _OffsetsAstVisitor {
     if (fragment is FieldFragmentImpl && fragment.isEnumConstant) {
       _applyToEnumConstantInitializer(fragment);
     } else if (fragment is VariableFragmentImpl) {
-      fragment.constantInitializer?.accept2(this);
+      fragment.constantInitializer2?.accept2(this);
     }
   }
 
@@ -1834,9 +1834,11 @@ class _OffsetsApplier extends _OffsetsAstVisitor {
   }
 
   void _applyToEnumConstantInitializer(FieldFragmentImpl fragment) {
-    var initializer = fragment.constantInitializer;
-    if (initializer is InstanceCreationExpressionImpl) {
-      initializer.constructorName.type.typeArguments?.accept2(this);
+    var initializer = fragment.constantInitializer2;
+    if (initializer is ConstructorInvocationImpl) {
+      initializer.constructorReference.typeReference.typeArguments?.accept2(
+        this,
+      );
       initializer.argumentList.accept2(this);
     }
   }
@@ -1906,10 +1908,30 @@ abstract class _OffsetsAstVisitor extends RecursiveAstVisitor2<void> {
   }
 
   @override
+  void visitConstructorInvocation(ConstructorInvocation node) {
+    _tokenOrNull(node.keyword);
+    node.constructorReference.accept2(this);
+    node.argumentList.accept2(this);
+  }
+
+  @override
   void visitConstructorName(ConstructorName node) {
     node.type.accept2(this);
     _tokenOrNull(node.period);
     node.name?.accept2(this);
+  }
+
+  @override
+  void visitConstructorSelector(ConstructorSelector node) {
+    _tokenOrNull(node.period);
+    _tokenOrNull(node.name2);
+  }
+
+  @override
+  void visitConstructorTypeReference(ConstructorTypeReference node) {
+    node.importPrefix?.accept2(this);
+    _tokenOrNull(node.name);
+    node.typeArguments?.accept2(this);
   }
 
   @override
@@ -1985,13 +2007,6 @@ abstract class _OffsetsAstVisitor extends RecursiveAstVisitor2<void> {
     _tokenOrNull(node.leftBracket);
     _tokenOrNull(node.rightBracket);
     super.visitIndexExpression(node);
-  }
-
-  @override
-  void visitInstanceCreationExpression(InstanceCreationExpression node) {
-    _tokenOrNull(node.keyword);
-    node.constructorName.accept2(this);
-    node.argumentList.accept2(this);
   }
 
   @override
@@ -2152,7 +2167,6 @@ abstract class _OffsetsAstVisitor extends RecursiveAstVisitor2<void> {
     RedirectingConstructorInvocation node,
   ) {
     _tokenOrNull(node.thisKeyword);
-    _tokenOrNull(node.period);
     super.visitRedirectingConstructorInvocation(node);
   }
 
@@ -2190,7 +2204,6 @@ abstract class _OffsetsAstVisitor extends RecursiveAstVisitor2<void> {
   @override
   void visitSuperConstructorInvocation(SuperConstructorInvocation node) {
     _tokenOrNull(node.superKeyword);
-    _tokenOrNull(node.period);
     super.visitSuperConstructorInvocation(node);
   }
 

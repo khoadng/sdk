@@ -514,17 +514,38 @@ class A {
     );
   }
 
-  void test_constructorName() {
+  void test_constructorInvocation() {
+    var parseResult = parseTestCodeWithDiagnostics(r'''
+void f() {
+  new A(0);
+  new B(1);
+}
+''');
+    _assertReplacementForChildren<ConstructorInvocation>(
+      destination: parseResult.findNode.constructorInvocation('A('),
+      source: parseResult.findNode.constructorInvocation('B('),
+      childAccessors: [
+        (node) => node.constructorReference,
+        (node) => node.argumentList,
+      ],
+    );
+  }
+
+  void test_constructorReference2() {
     var parseResult = parseTestCodeWithDiagnostics(r'''
 void f() {
   new prefix.A.foo();
   new prefix.B.bar();
 }
 ''');
-    _assertReplacementForChildren<ConstructorName>(
-      destination: parseResult.findNode.constructorName('A.foo'),
-      source: parseResult.findNode.constructorName('B.bar'),
-      childAccessors: [(node) => node.type, (node) => node.name!],
+    _assertReplacementForChildren<ConstructorReference2>(
+      destination: parseResult.findNode
+          .constructorInvocation('A.foo')
+          .constructorReference,
+      source: parseResult.findNode
+          .constructorInvocation('B.bar')
+          .constructorReference,
+      childAccessors: [(node) => node.typeReference, (node) => node.selector!],
     );
   }
 
@@ -787,7 +808,7 @@ void f() {
     _assertReplacementForChildren<ForEachPartsWithDeclaration>(
       destination: parseResult.findNode.forEachPartsWithDeclaration('a in'),
       source: parseResult.findNode.forEachPartsWithDeclaration('b in'),
-      childAccessors: [(node) => node.loopVariable, (node) => node.iterable],
+      childAccessors: [(node) => node.loopVariable, (node) => node.iterable2],
     );
   }
 
@@ -801,7 +822,7 @@ void f() {
     _assertReplacementForChildren<ForEachPartsWithIdentifier>(
       destination: parseResult.findNode.forEachPartsWithIdentifier('a in'),
       source: parseResult.findNode.forEachPartsWithIdentifier('b in'),
-      childAccessors: [(node) => node.identifier, (node) => node.iterable],
+      childAccessors: [(node) => node.identifier, (node) => node.iterable2],
     );
   }
 
@@ -815,7 +836,7 @@ void f() {
     _assertReplacementForChildren<ForEachPartsWithPattern>(
       destination: parseResult.findNode.forEachPartsWithPattern('(a)'),
       source: parseResult.findNode.forEachPartsWithPattern('(b)'),
-      childAccessors: [(node) => node.iterable],
+      childAccessors: [(node) => node.iterable2],
     );
   }
 
@@ -1133,23 +1154,6 @@ void f() {
       destination: parseResult.findNode.index('[0]'),
       source: parseResult.findNode.index('[1]'),
       childAccessors: [(node) => node.target2!, (node) => node.index2],
-    );
-  }
-
-  void test_instanceCreationExpression() {
-    var parseResult = parseTestCodeWithDiagnostics(r'''
-void f() {
-  new A(0);
-  new B(1);
-}
-''');
-    _assertReplacementForChildren<InstanceCreationExpression>(
-      destination: parseResult.findNode.instanceCreation('A('),
-      source: parseResult.findNode.instanceCreation('B('),
-      childAccessors: [
-        (node) => node.constructorName,
-        (node) => node.argumentList,
-      ],
     );
   }
 
@@ -1549,7 +1553,7 @@ class A {
       destination: parseResult.findNode.redirectingConstructorInvocation('(0)'),
       source: parseResult.findNode.redirectingConstructorInvocation('(1)'),
       childAccessors: [
-        (node) => node.constructorName!,
+        (node) => node.constructorSelector!,
         (node) => node.argumentList,
       ],
     );
@@ -1696,7 +1700,7 @@ class A {
       destination: parseResult.findNode.superConstructorInvocation('first'),
       source: parseResult.findNode.superConstructorInvocation('second'),
       childAccessors: [
-        (node) => node.constructorName!,
+        (node) => node.constructorSelector!,
         (node) => node.argumentList,
       ],
     );

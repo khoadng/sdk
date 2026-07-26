@@ -15,7 +15,6 @@ import 'package:front_end/src/dill/dill_target.dart';
 import 'package:front_end/src/dill/dill_type_alias_builder.dart';
 import 'package:front_end/src/kernel/body_builder.dart';
 import 'package:front_end/src/kernel/internal_ast.dart';
-import 'package:front_end/src/kernel/internal_ast_helper.dart' as forest;
 import 'package:kernel/ast.dart';
 import 'package:kernel/names.dart';
 import 'package:kernel/target/targets.dart';
@@ -71,6 +70,29 @@ void testVariable(
 
 void testVariableDeclaration(
   InternalVariableDeclaration node,
+  String normal, {
+  String? verbose,
+  String? limited,
+}) {
+  Expect.stringEquals(
+    normal,
+    node.toText(normalStrategy),
+    "Unexpected normal strategy text for ${node.runtimeType}",
+  );
+  Expect.stringEquals(
+    verbose ?? normal,
+    node.toText(verboseStrategy),
+    "Unexpected verbose strategy text for ${node.runtimeType}",
+  );
+  Expect.stringEquals(
+    limited ?? normal,
+    node.toText(limitedStrategy),
+    "Unexpected limited strategy text for ${node.runtimeType}",
+  );
+}
+
+void testElement(
+  InternalElement node,
   String normal, {
   String? verbose,
   String? limited,
@@ -247,7 +269,7 @@ void main() {
 
 void _testVariableDeclarations() {
   testStatement(
-    forest.variablesDeclaration([
+    new MultiVariableDeclaration([
       new InternalVariableDeclaration(
         new InternalLocalVariable(
           name: 'a',
@@ -255,7 +277,7 @@ void _testVariableDeclarations() {
           isImplicitlyTyped: false,
           fileOffset: TreeNode.noOffset,
         ),
-        fileOffset: TreeNode.noOffset,
+        nameOffset: TreeNode.noOffset,
       ),
       new InternalVariableDeclaration(
         new InternalLocalVariable(
@@ -264,14 +286,14 @@ void _testVariableDeclarations() {
           isImplicitlyTyped: false,
           fileOffset: TreeNode.noOffset,
         ),
-        fileOffset: TreeNode.noOffset,
+        nameOffset: TreeNode.noOffset,
       ),
     ], fileOffset: TreeNode.noOffset),
     '''
 dynamic a, b;''',
   );
   testStatement(
-    forest.variablesDeclaration([
+    new MultiVariableDeclaration([
       new InternalVariableDeclaration(
         new InternalLocalVariable(
           name: 'a',
@@ -279,7 +301,7 @@ dynamic a, b;''',
           isImplicitlyTyped: false,
           fileOffset: TreeNode.noOffset,
         ),
-        fileOffset: TreeNode.noOffset,
+        nameOffset: TreeNode.noOffset,
       ),
       new InternalVariableDeclaration(
         new InternalLocalVariable(
@@ -289,7 +311,7 @@ dynamic a, b;''',
           fileOffset: TreeNode.noOffset,
         ),
         initializer: new InternalNullLiteral(fileOffset: TreeNode.noOffset),
-        fileOffset: TreeNode.noOffset,
+        nameOffset: TreeNode.noOffset,
       ),
     ], fileOffset: TreeNode.noOffset),
     '''
@@ -551,7 +573,7 @@ void _testInternalForInStatement() {
             isImplicitlyTyped: true,
             fileOffset: -1,
           ),
-          fileOffset: TreeNode.noOffset,
+          nameOffset: TreeNode.noOffset,
         ),
         error: null,
       ),
@@ -579,7 +601,7 @@ for (var e in null) {}''',
             isImplicitlyTyped: false,
             fileOffset: -1,
           ),
-          fileOffset: TreeNode.noOffset,
+          nameOffset: TreeNode.noOffset,
         ),
         error: null,
       ),
@@ -770,7 +792,7 @@ for (null in null) {}''',
               isImplicitlyTyped: true,
               fileOffset: -1,
             ),
-            fileOffset: TreeNode.noOffset,
+            nameOffset: TreeNode.noOffset,
           ),
           new InternalVariableDeclaration(
             new InternalLocalVariable(
@@ -779,13 +801,14 @@ for (null in null) {}''',
               isImplicitlyTyped: true,
               fileOffset: -1,
             ),
-            fileOffset: TreeNode.noOffset,
+            nameOffset: TreeNode.noOffset,
           ),
         ],
         error: new InternalInvalidExpression(
           'error',
           fileOffset: TreeNode.noOffset,
         ),
+        fileOffset: TreeNode.noOffset,
       ),
       new InternalNullLiteral(fileOffset: TreeNode.noOffset),
       new InternalBlock(
@@ -812,7 +835,7 @@ for (var a, b in null) {}''',
               isImplicitlyTyped: false,
               fileOffset: -1,
             ),
-            fileOffset: TreeNode.noOffset,
+            nameOffset: TreeNode.noOffset,
           ),
           new InternalVariableDeclaration(
             new InternalLocalVariable(
@@ -821,13 +844,14 @@ for (var a, b in null) {}''',
               isImplicitlyTyped: true,
               fileOffset: -1,
             ),
-            fileOffset: TreeNode.noOffset,
+            nameOffset: TreeNode.noOffset,
           ),
         ],
         error: new InternalInvalidExpression(
           'error',
           fileOffset: TreeNode.noOffset,
         ),
+        fileOffset: TreeNode.noOffset,
       ),
       new InternalNullLiteral(fileOffset: TreeNode.noOffset),
       new InternalBlock(
@@ -2081,7 +2105,7 @@ void _testVariableDeclarationImpl() {
         isImplicitlyTyped: false,
         fileOffset: TreeNode.noOffset,
       ),
-      fileOffset: TreeNode.noOffset,
+      nameOffset: TreeNode.noOffset,
     ),
     '''
 dynamic foo''',
@@ -2099,7 +2123,7 @@ dynamic foo''',
         '0',
         fileOffset: TreeNode.noOffset,
       ),
-      fileOffset: TreeNode.noOffset,
+      nameOffset: TreeNode.noOffset,
     ),
     '''
 dynamic foo = 0''',
@@ -2136,7 +2160,7 @@ required void foo''',
         '0',
         fileOffset: TreeNode.noOffset,
       ),
-      fileOffset: TreeNode.noOffset,
+      nameOffset: TreeNode.noOffset,
     ),
     '''
 late void foo = 0''',
@@ -2158,7 +2182,7 @@ late void foo = 0''',
         '0',
         fileOffset: TreeNode.noOffset,
       ),
-      fileOffset: TreeNode.noOffset,
+      nameOffset: TreeNode.noOffset,
     ),
 
     '''
@@ -2182,7 +2206,7 @@ late void foo = 0''',
         '0',
         fileOffset: TreeNode.noOffset,
       ),
-      fileOffset: TreeNode.noOffset,
+      nameOffset: TreeNode.noOffset,
     ),
     '''
 late dynamic foo = 0''',
@@ -4616,18 +4640,18 @@ void _testParenthesizedExpression() {
 }
 
 void _testSpreadElement() {
-  testExpression(
+  testElement(
     new SpreadElement(
-      new InternalIntLiteral(0, '0', fileOffset: TreeNode.noOffset),
+      expression: new InternalIntLiteral(0, '0', fileOffset: TreeNode.noOffset),
       isNullAware: false,
       fileOffset: TreeNode.noOffset,
     ),
     '''
 ...0''',
   );
-  testExpression(
+  testElement(
     new SpreadElement(
-      new InternalIntLiteral(0, '0', fileOffset: TreeNode.noOffset),
+      expression: new InternalIntLiteral(0, '0', fileOffset: TreeNode.noOffset),
       isNullAware: true,
       fileOffset: TreeNode.noOffset,
     ),
@@ -4637,21 +4661,42 @@ void _testSpreadElement() {
 }
 
 void _testIfElement() {
-  testExpression(
+  testElement(
     new IfElement(
-      new InternalIntLiteral(0, '0', fileOffset: TreeNode.noOffset),
-      new InternalIntLiteral(1, '1', fileOffset: TreeNode.noOffset),
-      null,
+      condition: new InternalIntLiteral(0, '0', fileOffset: TreeNode.noOffset),
+      then: new ExpressionElement(
+        expression: new InternalIntLiteral(
+          1,
+          '1',
+          fileOffset: TreeNode.noOffset,
+        ),
+        fileOffset: TreeNode.noOffset,
+      ),
+      otherwise: null,
       fileOffset: TreeNode.noOffset,
     ),
     '''
 if (0) 1''',
   );
-  testExpression(
+  testElement(
     new IfElement(
-      new InternalIntLiteral(0, '0', fileOffset: TreeNode.noOffset),
-      new InternalIntLiteral(1, '1', fileOffset: TreeNode.noOffset),
-      new InternalIntLiteral(2, '2', fileOffset: TreeNode.noOffset),
+      condition: new InternalIntLiteral(0, '0', fileOffset: TreeNode.noOffset),
+      then: new ExpressionElement(
+        expression: new InternalIntLiteral(
+          1,
+          '1',
+          fileOffset: TreeNode.noOffset,
+        ),
+        fileOffset: TreeNode.noOffset,
+      ),
+      otherwise: new ExpressionElement(
+        expression: new InternalIntLiteral(
+          2,
+          '2',
+          fileOffset: TreeNode.noOffset,
+        ),
+        fileOffset: TreeNode.noOffset,
+      ),
       fileOffset: TreeNode.noOffset,
     ),
     '''

@@ -226,7 +226,7 @@ class AnnotationVerifier {
   void _checkDeprecatedOptional(Annotation node) {
     var parent = node.parent2;
     if (parent is FormalParameter) {
-      var parameterList = parent.parentFormalParameterList;
+      var parameterList = parent.parentFormalParameterList2;
 
       // This annotation is only valid on method declarations, constructor
       // declarations, and top-level function declarations.
@@ -299,7 +299,7 @@ class AnnotationVerifier {
 
     // Returns `true` for expressions like `new Foo()` or `null`.
     bool factoryExpression(Expression? expression) =>
-        expression is InstanceCreationExpression || expression is NullLiteral;
+        expression is ConstructorInvocation || expression is NullLiteral;
 
     if (body is ExpressionFunctionBody && factoryExpression(body.expression2)) {
       return;

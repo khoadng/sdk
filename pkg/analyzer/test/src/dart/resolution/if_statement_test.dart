@@ -1172,7 +1172,18 @@ IfStatement
     guardedPattern: GuardedPattern
       pattern: ConstantPattern
         constKeyword: const
-        expression2: InstanceCreationExpression
+        expression2: ConstructorInvocation
+          constructorReference: ConstructorReference2
+            typeReference: ConstructorTypeReference
+              name: A
+              element: <testLibrary>::@class::A
+              type: A
+            element: <testLibrary>::@class::A::@constructor::new
+          argumentList: ArgumentList
+            leftParenthesis: (
+            rightParenthesis: )
+          staticType: A
+        expression(v1): InstanceCreationExpression
           constructorName: ConstructorName
             type: NamedType
               name: A
@@ -1343,8 +1354,8 @@ IfStatement
 @reflectiveTest
 class InferenceUpdate4Test extends PubPackageResolutionTest {
   @override
-  List<String> get experiments {
-    return [...super.experiments, Feature.inference_update_4.enableString];
+  List<Feature> get experimentalFeatures {
+    return [...super.experimentalFeatures, Feature.inference_update_4];
   }
 
   test_finalPromotionKept_isExpression() async {

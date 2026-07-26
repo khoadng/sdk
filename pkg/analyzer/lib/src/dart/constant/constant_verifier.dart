@@ -177,7 +177,9 @@ class ConstantVerifier extends RecursiveAstVisitor2<void> {
       // Factory cycles are reported in elsewhere in
       // [ErrorVerifier._checkForRecursiveFactoryRedirect].
       var element = node.declaredFragment!.element;
-      if (!element.isCycleFree && !element.isFactory) {
+      if (!element.isCycleFree &&
+          element.isGenerative &&
+          !element.isInRedirectingConstructorCycle) {
         _diagnosticReporter.report(
           diag.recursiveConstantConstructor.atSourceRange(node.errorRange),
         );
@@ -195,6 +197,33 @@ class ConstantVerifier extends RecursiveAstVisitor2<void> {
     }
     _validateDefaultValues(node.parameters);
     super.visitConstructorDeclaration(node);
+  }
+
+  @override
+  void visitConstructorInvocation(covariant ConstructorInvocationImpl node) {
+    if (node.isConst) {
+      var typeReference = node.constructorReference.typeReference;
+      if (typeReference.element is TypeParameterElement) {
+        _diagnosticReporter.report(
+          diag.constWithTypeParameters.at(typeReference),
+        );
+      }
+      if (typeReference.typeArguments case var typeArguments?) {
+        for (var argument in typeArguments.arguments) {
+          _checkForConstWithTypeParameters(
+            argument,
+            diag.constWithTypeParameters,
+          );
+        }
+      }
+
+      var constructor = node.constructorReference.element;
+      if (constructor != null) {
+        _validateConstructorInvocation(node, constructor, node.argumentList);
+      }
+    } else {
+      super.visitConstructorInvocation(node);
+    }
   }
 
   @override
@@ -269,23 +298,6 @@ class ConstantVerifier extends RecursiveAstVisitor2<void> {
     if ((parent is AsExpression || parent is IsExpression) &&
         (parent as Expression).inConstantContext) {
       _checkForConstWithTypeParameters(node, diag.constWithTypeParameters);
-    }
-  }
-
-  @override
-  void visitInstanceCreationExpression(
-    covariant InstanceCreationExpressionImpl node,
-  ) {
-    if (node.isConst) {
-      var namedType = node.constructorName.type;
-      _checkForConstWithTypeParameters(namedType, diag.constWithTypeParameters);
-
-      var constructor = node.constructorName.element;
-      if (constructor != null) {
-        _validateConstructorInvocation(node, constructor, node.argumentList);
-      }
-    } else {
-      super.visitInstanceCreationExpression(node);
     }
   }
 

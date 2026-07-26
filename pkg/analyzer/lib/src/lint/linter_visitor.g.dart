@@ -1417,6 +1417,13 @@ class AnalysisRuleVisitor2 implements AstVisitor2<void> {
     node.visitChildren2(this);
   }
 
+  @experimental
+  @override
+  void visitConstructorInvocation(ConstructorInvocation node) {
+    _runSubscriptions(node, _registry._forConstructorInvocation);
+    node.visitChildren2(this);
+  }
+
   @override
   void visitConstructorName(ConstructorName node) {
     _runSubscriptions(node, _registry._forConstructorName);
@@ -1429,9 +1436,30 @@ class AnalysisRuleVisitor2 implements AstVisitor2<void> {
     node.visitChildren2(this);
   }
 
+  @experimental
+  @override
+  void visitConstructorReference2(ConstructorReference2 node) {
+    _runSubscriptions(node, _registry._forConstructorReference2);
+    node.visitChildren2(this);
+  }
+
   @override
   void visitConstructorSelector(ConstructorSelector node) {
     _runSubscriptions(node, _registry._forConstructorSelector);
+    node.visitChildren2(this);
+  }
+
+  @experimental
+  @override
+  void visitConstructorTearOff(ConstructorTearOff node) {
+    _runSubscriptions(node, _registry._forConstructorTearOff);
+    node.visitChildren2(this);
+  }
+
+  @experimental
+  @override
+  void visitConstructorTypeReference(ConstructorTypeReference node) {
+    _runSubscriptions(node, _registry._forConstructorTypeReference);
     node.visitChildren2(this);
   }
 
@@ -1767,12 +1795,6 @@ class AnalysisRuleVisitor2 implements AstVisitor2<void> {
   @override
   void visitIndexExpression(IndexExpression node) {
     _runSubscriptions(node, _registry._forIndexExpression);
-    node.visitChildren2(this);
-  }
-
-  @override
-  void visitInstanceCreationExpression(InstanceCreationExpression node) {
-    _runSubscriptions(node, _registry._forInstanceCreationExpression);
     node.visitChildren2(this);
   }
 
@@ -4214,12 +4236,23 @@ class RuleVisitorRegistryImpl2 implements RuleVisitorRegistry2 {
   final List<_Subscription2<ConstructorFieldInitializer>>
   _forConstructorFieldInitializer = [];
 
+  final List<_Subscription2<ConstructorInvocation>> _forConstructorInvocation =
+      [];
+
   final List<_Subscription2<ConstructorName>> _forConstructorName = [];
+
+  final List<_Subscription2<ConstructorReference2>> _forConstructorReference2 =
+      [];
 
   final List<_Subscription2<ConstructorReference>> _forConstructorReference =
       [];
 
   final List<_Subscription2<ConstructorSelector>> _forConstructorSelector = [];
+
+  final List<_Subscription2<ConstructorTearOff>> _forConstructorTearOff = [];
+
+  final List<_Subscription2<ConstructorTypeReference>>
+  _forConstructorTypeReference = [];
 
   final List<_Subscription2<ContinueStatement>> _forContinueStatement = [];
 
@@ -4352,9 +4385,6 @@ class RuleVisitorRegistryImpl2 implements RuleVisitorRegistry2 {
       [];
 
   final List<_Subscription2<IndexExpression>> _forIndexExpression = [];
-
-  final List<_Subscription2<InstanceCreationExpression>>
-  _forInstanceCreationExpression = [];
 
   final List<_Subscription2<IntegerLiteral>> _forIntegerLiteral = [];
 
@@ -4804,6 +4834,17 @@ class RuleVisitorRegistryImpl2 implements RuleVisitorRegistry2 {
   }
 
   @override
+  void addConstructorInvocation(
+    AbstractAnalysisRule rule,
+    AstVisitor2 visitor,
+  ) {
+    _hasNodeProcessors = true;
+    _forConstructorInvocation.add(
+      _Subscription2(rule, visitor, _getTimer(rule)),
+    );
+  }
+
+  @override
   void addConstructorName(AbstractAnalysisRule rule, AstVisitor2 visitor) {
     _hasNodeProcessors = true;
     _forConstructorName.add(_Subscription2(rule, visitor, _getTimer(rule)));
@@ -4818,9 +4859,37 @@ class RuleVisitorRegistryImpl2 implements RuleVisitorRegistry2 {
   }
 
   @override
+  void addConstructorReference2(
+    AbstractAnalysisRule rule,
+    AstVisitor2 visitor,
+  ) {
+    _hasNodeProcessors = true;
+    _forConstructorReference2.add(
+      _Subscription2(rule, visitor, _getTimer(rule)),
+    );
+  }
+
+  @override
   void addConstructorSelector(AbstractAnalysisRule rule, AstVisitor2 visitor) {
     _hasNodeProcessors = true;
     _forConstructorSelector.add(_Subscription2(rule, visitor, _getTimer(rule)));
+  }
+
+  @override
+  void addConstructorTearOff(AbstractAnalysisRule rule, AstVisitor2 visitor) {
+    _hasNodeProcessors = true;
+    _forConstructorTearOff.add(_Subscription2(rule, visitor, _getTimer(rule)));
+  }
+
+  @override
+  void addConstructorTypeReference(
+    AbstractAnalysisRule rule,
+    AstVisitor2 visitor,
+  ) {
+    _hasNodeProcessors = true;
+    _forConstructorTypeReference.add(
+      _Subscription2(rule, visitor, _getTimer(rule)),
+    );
   }
 
   @override
@@ -5255,17 +5324,6 @@ class RuleVisitorRegistryImpl2 implements RuleVisitorRegistry2 {
   void addIndexExpression(AbstractAnalysisRule rule, AstVisitor2 visitor) {
     _hasNodeProcessors = true;
     _forIndexExpression.add(_Subscription2(rule, visitor, _getTimer(rule)));
-  }
-
-  @override
-  void addInstanceCreationExpression(
-    AbstractAnalysisRule rule,
-    AstVisitor2 visitor,
-  ) {
-    _hasNodeProcessors = true;
-    _forInstanceCreationExpression.add(
-      _Subscription2(rule, visitor, _getTimer(rule)),
-    );
   }
 
   @override

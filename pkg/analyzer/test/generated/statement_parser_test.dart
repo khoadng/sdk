@@ -758,7 +758,7 @@ Block
         identifier: SimpleIdentifier
           token: element
         inKeyword: in
-        iterable: SimpleIdentifier
+        iterable2: SimpleIdentifier
           token: list
       rightParenthesis: )
       body: Block
@@ -787,7 +787,7 @@ Block
           keyword: final
           name: external
         inKeyword: in
-        iterable: SimpleIdentifier
+        iterable2: SimpleIdentifier
           token: list
       rightParenthesis: )
       body: Block
@@ -816,7 +816,7 @@ Block
           keyword: final
           name: required
         inKeyword: in
-        iterable: SimpleIdentifier
+        iterable2: SimpleIdentifier
           token: list
       rightParenthesis: )
       body: Block
@@ -867,7 +867,7 @@ Block
               rightParenthesis: )
           name: element
         inKeyword: in
-        iterable: SimpleIdentifier
+        iterable2: SimpleIdentifier
           token: list
       rightParenthesis: )
       body: Block
@@ -918,7 +918,7 @@ Block
               rightParenthesis: )
           name: element
         inKeyword: in
-        iterable: SimpleIdentifier
+        iterable2: SimpleIdentifier
           token: list
       rightParenthesis: )
       body: Block
@@ -946,7 +946,7 @@ Block
         identifier: SimpleIdentifier
           token: element
         inKeyword: in
-        iterable: SimpleIdentifier
+        iterable2: SimpleIdentifier
           token: list
       rightParenthesis: )
       body: Block
@@ -974,7 +974,7 @@ Block
         identifier: SimpleIdentifier
           token: element
         inKeyword: in
-        iterable: SimpleIdentifier
+        iterable2: SimpleIdentifier
           token: list
       rightParenthesis: )
       body: Block
@@ -1008,7 +1008,7 @@ Block
           keyword: var
           name: element
         inKeyword: in
-        iterable: SimpleIdentifier
+        iterable2: SimpleIdentifier
           token: list
       rightParenthesis: )
       body: Block
@@ -1042,7 +1042,7 @@ Block
           keyword: var
           name: element
         inKeyword: in
-        iterable: SimpleIdentifier
+        iterable2: SimpleIdentifier
           token: list
       rightParenthesis: )
       body: Block
@@ -1072,7 +1072,7 @@ Block
             name: A
           name: element
         inKeyword: in
-        iterable: SimpleIdentifier
+        iterable2: SimpleIdentifier
           token: list
       rightParenthesis: )
       body: Block
@@ -1102,7 +1102,7 @@ Block
             name: A
           name: element
         inKeyword: in
-        iterable: SimpleIdentifier
+        iterable2: SimpleIdentifier
           token: list
       rightParenthesis: )
       body: Block
@@ -1131,7 +1131,7 @@ Block
           keyword: var
           name: element
         inKeyword: in
-        iterable: SimpleIdentifier
+        iterable2: SimpleIdentifier
           token: list
       rightParenthesis: )
       body: Block
@@ -1160,7 +1160,7 @@ Block
           keyword: var
           name: element
         inKeyword: in
-        iterable: SimpleIdentifier
+        iterable2: SimpleIdentifier
           token: list
       rightParenthesis: )
       body: Block
@@ -2377,7 +2377,15 @@ Block
   leftBracket: {
   statements
     ExpressionStatement
-      expression2: InstanceCreationExpression
+      expression2: ConstructorInvocation
+        keyword: const
+        constructorReference: ConstructorReference2
+          typeReference: ConstructorTypeReference
+            name: A
+        argumentList: ArgumentList
+          leftParenthesis: (
+          rightParenthesis: )
+      expression(v1): InstanceCreationExpression
         keyword: const
         constructorName: ConstructorName
           type: NamedType
@@ -2402,7 +2410,24 @@ Block
   leftBracket: {
   statements
     ExpressionStatement
-      expression2: InstanceCreationExpression
+      expression2: ConstructorInvocation
+        keyword: const
+        constructorReference: ConstructorReference2
+          typeReference: ConstructorTypeReference
+            name: A
+            typeArguments: TypeArgumentList
+              leftBracket: <
+              arguments
+                NamedType
+                  name: B
+              rightBracket: >
+          selector: ConstructorSelector
+            period: .
+            name2: c
+        argumentList: ArgumentList
+          leftParenthesis: (
+          rightParenthesis: )
+      expression(v1): InstanceCreationExpression
         keyword: const
         constructorName: ConstructorName
           type: NamedType
@@ -2438,7 +2463,30 @@ Block
   leftBracket: {
   statements
     ExpressionStatement
-      expression2: InstanceCreationExpression
+      expression2: ConstructorInvocation
+        keyword: const
+        constructorReference: ConstructorReference2
+          typeReference: ConstructorTypeReference
+            name: A
+            typeArguments: TypeArgumentList
+              leftBracket: <
+              arguments
+                NamedType
+                  name: B
+              rightBracket: >
+          selector: ConstructorSelector
+            period: .
+            name2: c
+        typeArguments: TypeArgumentList
+          leftBracket: <
+          arguments
+            NamedType
+              name: C
+          rightBracket: >
+        argumentList: ArgumentList
+          leftParenthesis: (
+          rightParenthesis: )
+      expression(v1): InstanceCreationExpression
         keyword: const
         constructorName: ConstructorName
           type: NamedType
@@ -2479,7 +2527,15 @@ Block
   statements
     ExpressionStatement
       expression2: MethodInvocation
-        target2: InstanceCreationExpression
+        target2: ConstructorInvocation
+          keyword: new
+          constructorReference: ConstructorReference2
+            typeReference: ConstructorTypeReference
+              name: C
+          argumentList: ArgumentList
+            leftParenthesis: (
+            rightParenthesis: )
+        target(v1): InstanceCreationExpression
           keyword: new
           constructorName: ConstructorName
             type: NamedType

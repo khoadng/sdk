@@ -128,6 +128,10 @@ class ExitDetector extends GeneralizingAstVisitor2<bool> {
   }
 
   @override
+  bool visitConstructorInvocation(ConstructorInvocation node) =>
+      _nodeExits(node.argumentList);
+
+  @override
   bool visitConstructorReference(ConstructorReference node) => false;
 
   @override
@@ -239,7 +243,7 @@ class ExitDetector extends GeneralizingAstVisitor2<bool> {
         }
         return false;
       } else if (forLoopParts is ForEachParts) {
-        bool iterableExits = _nodeExits(forLoopParts.iterable);
+        bool iterableExits = _nodeExits(forLoopParts.iterable2);
         // Discard whether the for-each body exits; since the for-each iterable
         // may be empty, execution may never enter the body, so it doesn't matter
         // if it exits or not.  We still must visit the body, to accurately
@@ -260,7 +264,7 @@ class ExitDetector extends GeneralizingAstVisitor2<bool> {
     ForLoopParts parts = node.forLoopParts;
     try {
       if (parts is ForEachParts) {
-        bool iterableExits = _nodeExits(parts.iterable);
+        bool iterableExits = _nodeExits(parts.iterable2);
         // Discard whether the for-each body exits; since the for-each iterable
         // may be empty, execution may never enter the body, so it doesn't matter
         // if it exits or not.  We still must visit the body, to accurately
@@ -405,10 +409,6 @@ class ExitDetector extends GeneralizingAstVisitor2<bool> {
     }
     return false;
   }
-
-  @override
-  bool visitInstanceCreationExpression(InstanceCreationExpression node) =>
-      _nodeExits(node.argumentList);
 
   @override
   bool visitIsExpression(IsExpression node) => node.expression2.accept2(this)!;
@@ -736,6 +736,14 @@ class ExitDetector extends GeneralizingAstVisitor2<bool> {
 
   /// Return `true` if the given [node] exits.
   static bool exits(AstNode node) {
+    if (node is InstanceCreationExpression) {
+      return exits2(node.argumentList);
+    }
+    return exits2(node);
+  }
+
+  /// Return `true` if the given [node] exits.
+  static bool exits2(AstNode node) {
     return ExitDetector()._nodeExits(node);
   }
 

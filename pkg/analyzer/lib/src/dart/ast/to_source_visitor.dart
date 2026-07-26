@@ -322,6 +322,13 @@ class ToSourceVisitor implements AstVisitor2<void> {
   }
 
   @override
+  void visitConstructorInvocation(ConstructorInvocation node) {
+    _visitToken(node.keyword, suffix: ' ');
+    _visitNode(node.constructorReference);
+    _visitNode(node.argumentList);
+  }
+
+  @override
   void visitConstructorName(ConstructorName node) {
     _visitNode(node.type);
     _visitNode(node.name, prefix: '.');
@@ -333,9 +340,31 @@ class ToSourceVisitor implements AstVisitor2<void> {
   }
 
   @override
+  @experimental
+  void visitConstructorReference2(ConstructorReference2 node) {
+    _visitNode(node.typeReference);
+    _visitNode(node.selector);
+  }
+
+  @override
   void visitConstructorSelector(ConstructorSelector node) {
     _visitToken(node.period);
-    _visitNode(node.name);
+    _visitToken(node.name2);
+  }
+
+  @override
+  @experimental
+  void visitConstructorTearOff(ConstructorTearOff node) {
+    _visitNode(node.typeReference);
+    _visitNode(node.selector);
+  }
+
+  @override
+  @experimental
+  void visitConstructorTypeReference(ConstructorTypeReference node) {
+    _visitNode(node.importPrefix);
+    _visitToken(node.name);
+    _visitNode(node.typeArguments);
   }
 
   @override
@@ -561,14 +590,14 @@ class ToSourceVisitor implements AstVisitor2<void> {
   void visitForEachPartsWithDeclaration(ForEachPartsWithDeclaration node) {
     _visitNode(node.loopVariable);
     sink.write(' in ');
-    _visitNode(node.iterable);
+    _visitNode(node.iterable2);
   }
 
   @override
   void visitForEachPartsWithIdentifier(ForEachPartsWithIdentifier node) {
     _visitNode(node.identifier);
     sink.write(' in ');
-    _visitNode(node.iterable);
+    _visitNode(node.iterable2);
   }
 
   @override
@@ -577,7 +606,7 @@ class ToSourceVisitor implements AstVisitor2<void> {
     _visitToken(node.keyword, suffix: ' ');
     _visitNode(node.pattern);
     sink.write(' in ');
-    _visitNode(node.iterable);
+    _visitNode(node.iterable2);
   }
 
   @override
@@ -806,13 +835,6 @@ class ToSourceVisitor implements AstVisitor2<void> {
     _visitToken(node.leftBracket);
     _visitNode(node.index2);
     _visitToken(node.rightBracket);
-  }
-
-  @override
-  void visitInstanceCreationExpression(InstanceCreationExpression node) {
-    _visitToken(node.keyword, suffix: ' ');
-    _visitNode(node.constructorName);
-    _visitNode(node.argumentList);
   }
 
   @override
@@ -1244,7 +1266,7 @@ class ToSourceVisitor implements AstVisitor2<void> {
     RedirectingConstructorInvocation node,
   ) {
     sink.write('this');
-    _visitNode(node.constructorName, prefix: '.');
+    _visitNode(node.constructorSelector);
     _visitNode(node.argumentList);
   }
 
@@ -1330,7 +1352,7 @@ class ToSourceVisitor implements AstVisitor2<void> {
   @override
   void visitSuperConstructorInvocation(SuperConstructorInvocation node) {
     sink.write('super');
-    _visitNode(node.constructorName, prefix: '.');
+    _visitNode(node.constructorSelector);
     _visitNode(node.argumentList);
   }
 

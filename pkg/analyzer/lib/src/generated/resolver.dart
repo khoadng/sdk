@@ -262,8 +262,8 @@ class ResolverVisitor extends ThrowingAstVisitor2<void>
 
   late final FunctionReferenceResolver _functionReferenceResolver;
 
-  late final InstanceCreationExpressionResolver
-  instanceCreationExpressionResolver = InstanceCreationExpressionResolver(this);
+  late final ConstructorInvocationResolver constructorInvocationResolver =
+      ConstructorInvocationResolver(this);
 
   late final SimpleIdentifierResolver _simpleIdentifierResolver =
       SimpleIdentifierResolver(this);
@@ -826,7 +826,7 @@ class ResolverVisitor extends ThrowingAstVisitor2<void>
       // [ConstantPatternImpl.resolvePattern] would do.
       analysisResult = analyzeConstantPattern(
         context,
-        node,
+        null,
         node as ExpressionImpl,
       );
       // Stack: (Expression)
@@ -987,7 +987,7 @@ class ResolverVisitor extends ThrowingAstVisitor2<void>
     var case_ = node.cases[index];
     var guardedPattern = case_.guardedPattern;
     return SwitchExpressionMemberInfo(
-      head: CaseHeadOrDefaultInfo(
+      head: CaseHeadInfo(
         pattern: guardedPattern.pattern,
         guard: guardedPattern.whenClause?.expression2,
         variables: guardedPattern.variables,
@@ -1007,19 +1007,16 @@ class ResolverVisitor extends ThrowingAstVisitor2<void>
     CaseHeadOrDefaultInfo<AstNodeImpl, ExpressionImpl, PromotableElementImpl>
     ofMember(SwitchMemberImpl member) {
       if (member is SwitchCaseImpl) {
-        return CaseHeadOrDefaultInfo(
-          pattern: member.expression2,
-          variables: {},
-        );
+        return CaseHeadInfo(pattern: member.expression2, variables: {});
       } else if (member is SwitchPatternCaseImpl) {
         var guardedPattern = member.guardedPattern;
-        return CaseHeadOrDefaultInfo(
+        return CaseHeadInfo(
           pattern: guardedPattern.pattern,
           variables: guardedPattern.variables,
           guard: guardedPattern.whenClause?.expression2,
         );
       } else {
-        return CaseHeadOrDefaultInfo(pattern: null, variables: {});
+        return CaseDefaultInfo();
       }
     }
 
@@ -2540,6 +2537,21 @@ class ResolverVisitor extends ThrowingAstVisitor2<void>
   }
 
   @override
+  void visitConstructorInvocation(
+    covariant ConstructorInvocationImpl node, {
+    TypeImpl contextType = UnknownInferredType.instance,
+  }) {
+    inferenceLogWriter?.enterExpression(node, contextType);
+    checkUnreachableNode(node);
+    // Types are resolved in an earlier phase, but type arguments can contain
+    // invalid default-value expressions that still need expression resolution.
+    node.constructorReference.typeReference.typeArguments?.accept2(this);
+    constructorInvocationResolver.resolve(node, contextType: contextType);
+    _insertImplicitCallReference(node, contextType: contextType);
+    inferenceLogWriter?.exitExpression(node);
+  }
+
+  @override
   void visitConstructorName(ConstructorName node) {
     node.type.accept2(this);
     elementResolver.visitConstructorName(node as ConstructorNameImpl);
@@ -2623,7 +2635,7 @@ class ResolverVisitor extends ThrowingAstVisitor2<void>
       pushDotShorthandContext(node, SharedTypeSchemaView(contextType));
     }
 
-    instanceCreationExpressionResolver.resolveDotShorthand(
+    constructorInvocationResolver.resolveDotShorthand(
       node,
       contextType: contextType,
     );
@@ -2763,27 +2775,27 @@ class ResolverVisitor extends ThrowingAstVisitor2<void>
     checkUnreachableNode(node);
 
     var fragment = node.declaredFragment!;
-    var initializer = fragment.constantInitializer;
-    if (initializer is InstanceCreationExpressionImpl) {
-      var constructorName = initializer.constructorName;
+    var initializer = fragment.constantInitializer2;
+    if (initializer is ConstructorInvocationImpl) {
+      var constructorName = initializer.constructorReference;
       var constructorElement = constructorName.element;
       if (constructorElement != null) {
         node.constructorElement = constructorElement;
         if (constructorElement.isFactory) {
-          var constructorName = node.arguments?.constructorSelector?.name;
+          var constructorName = node.arguments?.constructorSelector?.name2;
           var errorTarget = constructorName ?? node.name;
           diagnosticReporter.report(
             diag.enumConstantInvokesFactoryConstructor.at(errorTarget),
           );
         }
       } else {
-        if (constructorName.type.element is EnumElementImpl) {
-          var nameNode = node.arguments?.constructorSelector?.name;
-          if (nameNode != null) {
+        if (constructorName.typeReference.element is EnumElementImpl) {
+          var nameToken = node.arguments?.constructorSelector?.name2;
+          if (nameToken != null) {
             diagnosticReporter.report(
               diag.undefinedEnumConstructorNamed
-                  .withArguments(name: nameNode.name)
-                  .at(nameNode),
+                  .withArguments(name: nameToken.lexeme)
+                  .at(nameToken),
             );
           } else {
             diagnosticReporter.report(
@@ -2830,7 +2842,7 @@ class ResolverVisitor extends ThrowingAstVisitor2<void>
         operation: () {
           for (var argument in argumentList.arguments2) {
             analyzeExpression(
-              argument.argumentExpression,
+              argument.argumentExpression2,
               SharedTypeSchemaView(
                 argument.correspondingParameter?.type ??
                     UnknownInferredType.instance,
@@ -3366,18 +3378,6 @@ class ResolverVisitor extends ThrowingAstVisitor2<void>
       popDotShorthandContext();
     }
 
-    inferenceLogWriter?.exitExpression(node);
-  }
-
-  @override
-  void visitInstanceCreationExpression(
-    covariant InstanceCreationExpressionImpl node, {
-    TypeImpl contextType = UnknownInferredType.instance,
-  }) {
-    inferenceLogWriter?.enterExpression(node, contextType);
-    checkUnreachableNode(node);
-    instanceCreationExpressionResolver.resolve(node, contextType: contextType);
-    _insertImplicitCallReference(node, contextType: contextType);
     inferenceLogWriter?.exitExpression(node);
   }
 
@@ -4798,8 +4798,8 @@ class ResolverVisitor extends ThrowingAstVisitor2<void>
       );
       defaultValue = popRewrite()!;
 
-      if (node.isOfLocalFunction) {
-        fragment.constantInitializer = defaultValue;
+      if (node.isOfLocalFunction2) {
+        fragment.constantInitializer2 = defaultValue;
       }
     }
   }
@@ -5007,13 +5007,13 @@ class ResolverVisitor extends ThrowingAstVisitor2<void>
     required DiagnosticReporter diagnosticReporter,
   }) {
     String? name;
-    if (nameNode is InstanceCreationExpression) {
-      var constructorName = nameNode.constructorName;
+    if (nameNode is ConstructorInvocation) {
+      var constructorReference = nameNode.constructorReference;
       name =
-          constructorName.name?.name ??
-          '${constructorName.type.name.lexeme}.new';
+          constructorReference.selector?.name2.lexeme ??
+          '${constructorReference.typeReference.name.lexeme}.new';
     } else if (nameNode is RedirectingConstructorInvocation) {
-      name = nameNode.constructorName?.name;
+      name = nameNode.constructorSelector?.name2.lexeme;
       if (name == null) {
         var element = nameNode.element;
         if (element != null) {
@@ -5021,7 +5021,7 @@ class ResolverVisitor extends ThrowingAstVisitor2<void>
         }
       }
     } else if (nameNode is SuperConstructorInvocation) {
-      name = nameNode.constructorName?.name;
+      name = nameNode.constructorSelector?.name2.lexeme;
       if (name == null) {
         var element = nameNode.element;
         if (element != null) {
@@ -5200,9 +5200,9 @@ class _WhyNotPromotedVisitor
 
   @override
   List<DiagnosticMessage> visitDemoteViaExplicitWrite(
-    DemoteViaExplicitWrite<PromotableElementImpl> reason,
+    DemoteViaExplicitWrite<PromotableElementImpl, AstNode> reason,
   ) {
-    var node = reason.node as AstNode;
+    var node = reason.node;
     if (node is ForEachPartsWithIdentifier) {
       node = node.identifier;
     }
@@ -5215,9 +5215,9 @@ class _WhyNotPromotedVisitor
 
   @override
   List<DiagnosticMessage> visitDemoteViaSuspension(
-    DemoteViaSuspension<PromotableElementImpl> reason,
+    DemoteViaSuspension<PromotableElementImpl, AstNode> reason,
   ) {
-    var node = reason.node as AstNode;
+    var node = reason.node;
     if (_dataForTesting != null) {
       _dataForTesting.nonPromotionReasonTargets[node] = reason.shortName;
     }
@@ -5365,7 +5365,7 @@ class _WhyNotPromotedVisitor
   DiagnosticMessageImpl _contextMessageForSuspension(
     String? variableName,
     AstNode node,
-    DemoteViaSuspension<PromotableElementImpl> reason,
+    DemoteViaSuspension<PromotableElementImpl, AstNode> reason,
   ) {
     return DiagnosticMessageImpl(
       filePath: source.fullName,
@@ -5381,7 +5381,7 @@ class _WhyNotPromotedVisitor
   DiagnosticMessageImpl _contextMessageForWrite(
     String? variableName,
     AstNode node,
-    DemoteViaExplicitWrite<PromotableElementImpl> reason,
+    DemoteViaExplicitWrite<PromotableElementImpl, AstNode> reason,
   ) {
     return DiagnosticMessageImpl(
       filePath: source.fullName,

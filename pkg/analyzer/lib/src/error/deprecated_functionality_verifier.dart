@@ -52,13 +52,29 @@ class DeprecatedFunctionalityVerifier {
         element: element,
         argumentList: redirectingConstructorInvocation.argumentList,
         errorEntity:
-            redirectingConstructorInvocation.constructorName ??
+            redirectingConstructorInvocation.constructorSelector?.name2 ??
             redirectingConstructorInvocation.thisKeyword,
       );
     }
 
     // TODO(srawlins): Detect omitted parameters in a redirecting factory
     // constructor.
+  }
+
+  void constructorInvocation(ConstructorInvocation node) {
+    var constructor = node.constructorReference.element;
+    if (constructor == null) return;
+    _checkForDeprecatedOptional(
+      element: constructor,
+      argumentList: node.argumentList,
+      errorEntity: node.constructorReference,
+    );
+    var interfaceElement = node.constructorReference.typeReference.element;
+    if (interfaceElement is! InterfaceElement) return;
+    _checkForDeprecatedInstantiate(
+      element: interfaceElement,
+      errorNode: node.constructorReference,
+    );
   }
 
   void constructorName(ConstructorName node) {
@@ -96,22 +112,6 @@ class DeprecatedFunctionalityVerifier {
   void enumDeclaration(EnumDeclaration node) {
     _checkForDeprecatedImplement(node.implementsClause?.interfaces);
     _checkForDeprecatedMixin(node.withClause);
-  }
-
-  void instanceCreationExpression(InstanceCreationExpression node) {
-    var constructor = node.constructorName.element;
-    if (constructor == null) return;
-    _checkForDeprecatedOptional(
-      element: constructor,
-      argumentList: node.argumentList,
-      errorEntity: node.constructorName,
-    );
-    var interfaceElement = node.constructorName.type.element;
-    if (interfaceElement is! InterfaceElement) return;
-    _checkForDeprecatedInstantiate(
-      element: interfaceElement,
-      errorNode: node.constructorName,
-    );
   }
 
   void methodInvocation(MethodInvocation node) {
@@ -308,7 +308,7 @@ class DeprecatedFunctionalityVerifier {
           superConstructorInvocation.argumentList.arguments2;
 
       var errorEntity =
-          superConstructorInvocation.constructorName ??
+          superConstructorInvocation.constructorSelector?.name2 ??
           superConstructorInvocation.superKeyword;
       errorRange = errorEntity.sourceRange;
     }

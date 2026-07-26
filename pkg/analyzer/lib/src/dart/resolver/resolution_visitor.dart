@@ -309,8 +309,52 @@ class ResolutionVisitor extends RecursiveAstVisitor2<void> {
   }
 
   @override
+  void visitConstructorInvocation(covariant ConstructorInvocationImpl node) {
+    var newNode = _astRewriter.constructorInvocation(
+      nameScope,
+      node,
+      libraryElement: _libraryElement,
+      enclosingInstanceElement: _scopeContext.enclosingInstanceElement,
+    );
+    if (newNode != node) {
+      if (node.constructorReference.typeReference.typeArguments != null &&
+          newNode is MethodInvocation &&
+          newNode.target2 is FunctionReference &&
+          !_libraryElement.featureSet.isEnabled(Feature.constructor_tearoffs)) {
+        // A function reference with explicit type arguments (an expression of
+        // the form `a<...>.m(...)` or `p.a<...>.m(...)` where `a` does not
+        // refer to a class name, nor a type alias), is illegal without the
+        // constructor tearoff feature.
+        //
+        // This is a case where the parser does not report an error, because the
+        // parser thinks this could be an ConstructorInvocation.
+        _diagnosticReporter.report(diag.sdkVersionConstructorTearoffs.at(node));
+      }
+      return newNode.accept2(this);
+    }
+
+    super.visitConstructorInvocation(node);
+  }
+
+  @override
   void visitConstructorName(covariant ConstructorNameImpl node) {
     node.visitChildrenWithHooks(this, visitName: (_) {});
+  }
+
+  @override
+  void visitConstructorReference2(covariant ConstructorReference2Impl node) {
+    node.typeReference.accept2(this);
+  }
+
+  @override
+  void visitConstructorTypeReference(
+    covariant ConstructorTypeReferenceImpl node,
+  ) {
+    node.typeArguments?.accept2(this);
+    _namedTypeResolver.resolveConstructorTypeReference(
+      node,
+      dataForTesting: dataForTesting,
+    );
   }
 
   @override
@@ -573,10 +617,10 @@ class ResolutionVisitor extends RecursiveAstVisitor2<void> {
         caseClause.guardedPattern,
         then: () {
           caseClause.nameScope = nameScope;
-          node.ifTrue.accept2(this);
+          node.ifTrue2.accept2(this);
         },
       );
-      node.ifFalse?.accept2(this);
+      node.ifFalse2?.accept2(this);
     } else {
       node.visitChildren2(this);
     }
@@ -590,14 +634,14 @@ class ResolutionVisitor extends RecursiveAstVisitor2<void> {
         caseClause.guardedPattern,
         then: () {
           caseClause.nameScope = nameScope;
-          _visitStatementInScope(node.ifTrue);
+          _visitStatementInScope(node.ifTrue2);
         },
       );
-      _visitStatementInScope(node.ifFalse);
+      _visitStatementInScope(node.ifFalse2);
     } else {
       node.expression2.accept2(this);
-      _visitStatementInScope(node.ifTrue);
-      _visitStatementInScope(node.ifFalse);
+      _visitStatementInScope(node.ifTrue2);
+      _visitStatementInScope(node.ifFalse2);
     }
   }
 
@@ -616,36 +660,6 @@ class ResolutionVisitor extends RecursiveAstVisitor2<void> {
       _setElementAnnotations(node.metadata, element.metadata.annotations);
     }
     node.visitChildrenWithHooks(this, visitPrefix: (_) {});
-  }
-
-  @override
-  void visitInstanceCreationExpression(
-    covariant InstanceCreationExpressionImpl node,
-  ) {
-    var newNode = _astRewriter.instanceCreationExpression(
-      nameScope,
-      node,
-      libraryElement: _libraryElement,
-      enclosingInstanceElement: _scopeContext.enclosingInstanceElement,
-    );
-    if (newNode != node) {
-      if (node.constructorName.type.typeArguments != null &&
-          newNode is MethodInvocation &&
-          newNode.target2 is FunctionReference &&
-          !_libraryElement.featureSet.isEnabled(Feature.constructor_tearoffs)) {
-        // A function reference with explicit type arguments (an expression of
-        // the form `a<...>.m(...)` or `p.a<...>.m(...)` where `a` does not
-        // refer to a class name, nor a type alias), is illegal without the
-        // constructor tearoff feature.
-        //
-        // This is a case where the parser does not report an error, because the
-        // parser thinks this could be an InstanceCreationExpression.
-        _diagnosticReporter.report(diag.sdkVersionConstructorTearoffs.at(node));
-      }
-      return newNode.accept2(this);
-    }
-
-    super.visitInstanceCreationExpression(node);
   }
 
   @override
@@ -783,13 +797,6 @@ class ResolutionVisitor extends RecursiveAstVisitor2<void> {
   }
 
   @override
-  void visitRedirectingConstructorInvocation(
-    covariant RedirectingConstructorInvocationImpl node,
-  ) {
-    node.visitChildrenWithHooks(this, visitConstructorName: (_) {});
-  }
-
-  @override
   void visitRegularFormalParameter(covariant RegularFormalParameterImpl node) {
     var fragment = node.declaredFragment!;
     var element = fragment.element;
@@ -854,13 +861,6 @@ class ResolutionVisitor extends RecursiveAstVisitor2<void> {
         }
       }
     }
-  }
-
-  @override
-  void visitSuperConstructorInvocation(
-    covariant SuperConstructorInvocationImpl node,
-  ) {
-    node.visitChildrenWithHooks(this, visitConstructorName: (_) {});
   }
 
   @override
@@ -1362,15 +1362,15 @@ class ResolutionVisitor extends RecursiveAstVisitor2<void> {
   void _visitForLoopParts(LocalScope scope, ForLoopPartsImpl node) {
     switch (node) {
       case ForEachPartsWithDeclarationImpl():
-        node.iterable.accept2(this);
+        node.iterable2.accept2(this);
         var element = node.loopVariable.declaredFragment!.element;
         scope.add(element);
         node.loopVariable.accept2(this);
       case ForEachPartsWithIdentifierImpl():
-        node.iterable.accept2(this);
+        node.iterable2.accept2(this);
         node.identifier.accept2(this);
       case ForEachPartsWithPatternImpl():
-        node.iterable.accept2(this);
+        node.iterable2.accept2(this);
         var variables = _computeDeclaredPatternVariables(node.pattern);
         node.variables = variables;
         scope.addAll(variables);

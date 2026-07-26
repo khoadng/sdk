@@ -119,6 +119,14 @@ class GatherUsedLocalElementsVisitor extends RecursiveAstVisitor2<void> {
   }
 
   @override
+  void visitConstructorInvocation(ConstructorInvocation node) {
+    _useIdentifierElement(node.constructorReference.typeReference.element);
+    _useIdentifierElement(node.constructorReference.element);
+    _addParametersForArguments(node.argumentList);
+    super.visitConstructorInvocation(node);
+  }
+
+  @override
   void visitDotShorthandConstructorInvocation(
     DotShorthandConstructorInvocation node,
   ) {
@@ -194,15 +202,9 @@ class GatherUsedLocalElementsVisitor extends RecursiveAstVisitor2<void> {
 
   @override
   void visitIndexExpression(IndexExpression node) {
-    var element = node.writeOrReadElement;
+    var element = node.writeOrReadElement2;
     usedElements.addMember(element);
     super.visitIndexExpression(node);
-  }
-
-  @override
-  void visitInstanceCreationExpression(InstanceCreationExpression node) {
-    _addParametersForArguments(node.argumentList);
-    super.visitInstanceCreationExpression(node);
   }
 
   @override
@@ -267,6 +269,24 @@ class GatherUsedLocalElementsVisitor extends RecursiveAstVisitor2<void> {
   }
 
   @override
+  void visitRedirectingConstructorInvocation(
+    RedirectingConstructorInvocation node,
+  ) {
+    var element = node.element;
+    usedElements.addElement(element);
+    _addParametersForArguments(node.argumentList);
+
+    // TODO(scheglov): Remove this compatibility behavior and report optional
+    // parameters that are omitted by every invocation.
+    if (element != null && node.constructorSelector != null) {
+      for (var parameter in element.baseElement.formalParameters) {
+        usedElements.addElement(parameter);
+      }
+    }
+    super.visitRedirectingConstructorInvocation(node);
+  }
+
+  @override
   void visitRelationalPattern(RelationalPattern node) {
     usedElements.addMember(node.element);
     usedElements.addReadMember(node.element);
@@ -278,10 +298,10 @@ class GatherUsedLocalElementsVisitor extends RecursiveAstVisitor2<void> {
     if (node.inDeclarationContext()) {
       return;
     }
-    if (node.inCommentReference) {
+    if (node.inCommentReference2) {
       return;
     }
-    var element = node.writeOrReadElement;
+    var element = node.writeOrReadElement2;
     // Store un-parameterized members.
     if (element is SubstitutedExecutableElementImpl) {
       element = element.baseElement;
@@ -303,8 +323,8 @@ class GatherUsedLocalElementsVisitor extends RecursiveAstVisitor2<void> {
       }
     } else {
       var parent = node.parent2!;
-      _useIdentifierElement(node.readElement);
-      _useIdentifierElement(node.writeElement);
+      _useIdentifierElement(node.readElement2);
+      _useIdentifierElement(node.writeElement2);
       _useIdentifierElement(node.element);
       var grandparent = parent.parent2;
       // If [node] is a tear-off, assume all parameters are used.
@@ -313,11 +333,11 @@ class GatherUsedLocalElementsVisitor extends RecursiveAstVisitor2<void> {
           // named constructor
           (element is ConstructorElement &&
               parent is ConstructorName &&
-              grandparent is InstanceCreationExpression) ||
+              grandparent is ConstructorInvocation) ||
           // unnamed constructor
           (element is InterfaceElement &&
               grandparent is ConstructorName &&
-              grandparent.parent2 is InstanceCreationExpression);
+              grandparent.parent2 is ConstructorInvocation);
       if (element is ExecutableElement &&
           isIdentifierRead &&
           !functionReferenceIsCall) {
@@ -351,7 +371,17 @@ class GatherUsedLocalElementsVisitor extends RecursiveAstVisitor2<void> {
 
   @override
   void visitSuperConstructorInvocation(SuperConstructorInvocation node) {
+    var element = node.element;
+    usedElements.addElement(element);
     _addParametersForArguments(node.argumentList);
+
+    // TODO(scheglov): Remove this compatibility behavior and report optional
+    // parameters that are omitted by every invocation.
+    if (element != null && node.constructorSelector != null) {
+      for (var parameter in element.baseElement.formalParameters) {
+        usedElements.addElement(parameter);
+      }
+    }
     super.visitSuperConstructorInvocation(node);
   }
 
