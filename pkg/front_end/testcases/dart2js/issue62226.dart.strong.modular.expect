@@ -1,0 +1,84 @@
+library;
+import self as self;
+import "dart:core" as core;
+import "dart:collection" as col;
+
+static method listLiteralSpread(core::bool include) → core::List<core::num>
+  return block {
+    final core::List<core::num> #t1 = <core::num>[0];
+    if(include) {
+      #t1.{core::List::add}{Invariant}(1){(core::num) → void};
+      #t1.{core::List::add}{Invariant}(2){(core::num) → void};
+    }
+    #t1.{core::List::add}{Invariant}(3){(core::num) → void};
+  } =>#t1;
+static method initialListLiteralSpread() → core::List<core::num>
+  return block {
+    final core::List<core::num> #t2 = <core::num>[1, 2];
+    #t2.{core::List::add}{Invariant}(3){(core::num) → void};
+  } =>#t2;
+static method nullAwareListLiteralSpread() → core::List<core::num>
+  return block {
+    final core::List<core::num> #t3 = <core::num>[0];
+    #t3.{core::List::add}{Invariant}(1){(core::num) → void};
+    #t3.{core::List::add}{Invariant}(2){(core::num) → void};
+    #t3.{core::List::add}{Invariant}(3){(core::num) → void};
+  } =>#t3;
+static method value(core::int value) → core::int
+  return value;
+static method listLiteralSpreadIntoSet(core::bool include) → core::Set<core::num>
+  return block {
+    final core::Set<core::num> #t4 = <core::num>{0};
+    if(include) {
+      final core::num #t5 = self::value(1);
+      final core::num #t6 = self::value(2);
+      #t4.{core::Set::add}{Invariant}(#t5){(core::num) → core::bool};
+      #t4.{core::Set::add}{Invariant}(#t6){(core::num) → core::bool};
+    }
+    #t4.{core::Set::add}{Invariant}(3){(core::num) → core::bool};
+  } =>#t4;
+static method initialListLiteralSpreadIntoSet() → core::Set<core::num>
+  return block {
+    final core::num #t7 = self::value(1);
+    final core::num #t8 = self::value(2);
+    final core::Set<core::num> #t9 = <core::num>{#t7, #t8};
+    #t9.{core::Set::add}{Invariant}(3){(core::num) → core::bool};
+  } =>#t9;
+static method setLiteralSpreadRetained(core::bool include) → core::Set<core::num>
+  return block {
+    final core::Set<core::num> #t10 = <core::num>{0};
+    if(include)
+      #t10.{core::Set::addAll}{Invariant}(<core::int>{1, 2}){(core::Iterable<core::num>) → void};
+    #t10.{core::Set::add}{Invariant}(3){(core::num) → core::bool};
+  } =>#t10;
+static method initialSetLiteralSpreadRetained() → core::Set<core::num>
+  return block {
+    final core::Set<core::num> #t11 = col::LinkedHashSet::of<core::num>(<core::int>{1, 2});
+    #t11.{core::Set::add}{Invariant}(3){(core::num) → core::bool};
+  } =>#t11;
+static method mapLiteralSpreadRetained(core::bool include) → core::Map<core::num, core::Object>
+  return block {
+    final core::Map<core::num, core::Object> #t12 = <core::num, core::Object>{};
+    #t12.{core::Map::[]=}{Invariant}(0, "zero"){(core::num, core::Object) → void};
+    if(include)
+      #t12.{core::Map::addAll}{Invariant}(<core::int, core::String>{1: "one", 2: "two"}){(core::Map<core::num, core::Object>) → void};
+    #t12.{core::Map::[]=}{Invariant}(3, "three"){(core::num, core::Object) → void};
+  } =>#t12;
+static method initialMapLiteralSpreadRetained() → core::Map<core::num, core::Object>
+  return block {
+    final core::Map<core::num, core::Object> #t13 = col::LinkedHashMap::of<core::num, core::Object>(<core::int, core::String>{1: "one", 2: "two"});
+    #t13.{core::Map::[]=}{Invariant}(3, "three"){(core::num, core::Object) → void};
+  } =>#t13;
+static method setIntoList() → core::List<core::int>
+  return block {
+    final core::List<core::int> #t14 = core::List::of<core::int>(<core::int>{1, 2});
+  } =>#t14;
+static method checkedListLiteralSpread() → core::List<core::int>
+  return block {
+    final core::List<core::int> #t15 = <core::int>[];
+    for (final has-declared-initializer dynamic #t16 in <dynamic>[1, 2]) {
+      final core::int #t17 = #t16 as{TypeError} core::int;
+      #t15.{core::List::add}{Invariant}(#t17){(core::int) → void};
+    }
+  } =>#t15;
+static method main() → void {}

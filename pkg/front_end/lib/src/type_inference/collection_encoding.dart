@@ -915,19 +915,31 @@ abstract class _NonConstListOrSetLiteralBuilder(
     if (index == 0 && elements[index] is InferredSpreadElement) {
       InferredSpreadElement initialSpread =
           elements[index] as InferredSpreadElement;
-      final bool typeMatches = _typeSchemaEnvironment.isSubtypeOf(
-        initialSpread.elementType.expressionType,
-        _elementType,
-      );
-      if (typeMatches && !initialSpread.isNullAware) {
-        // Create a list or set of the initial spread element.
-        Expression value = initialSpread.expression;
-        index++;
-        result = _createInitialValueFromSpread(
-          body: body,
-          spread: value,
-          fileOffset: fileOffset,
+      final bool typeMatches = _spreadElementTypeMatches(initialSpread);
+      if (typeMatches) {
+        List<Expression>? expressions = _listLiteralExpressions(
+          initialSpread.expression,
         );
+        if (expressions != null) {
+          expressions = _prepareListLiteralSpreadExpressions(
+            expressions: expressions,
+            body: body,
+          );
+          index++;
+          result = _createInitialValueFromExpressions(
+            body: body,
+            expressions: expressions,
+            fileOffset: fileOffset,
+          );
+        } else if (!initialSpread.isNullAware) {
+          // Create a list or set of the initial spread element.
+          index++;
+          result = _createInitialValueFromSpread(
+            body: body,
+            spread: initialSpread.expression,
+            fileOffset: fileOffset,
+          );
+        }
       }
     }
     if (result == null) {
@@ -1006,6 +1018,29 @@ abstract class _NonConstListOrSetLiteralBuilder(
     required List<Expression> expressions,
     required int fileOffset,
   });
+
+  /// Returns the expressions in [expression] if it is a list literal.
+  List<Expression>? _listLiteralExpressions(Expression expression) {
+    return expression is ListLiteral ? expression.expressions : null;
+  }
+
+  /// Prepares [expressions] for inclusion in the destination collection.
+  ///
+  /// Implementations can cache the expressions when the destination's add
+  /// operation must not be interleaved with their evaluation.
+  List<Expression> _prepareListLiteralSpreadExpressions({
+    required List<Expression> expressions,
+    required List<Statement> body,
+  }) {
+    return expressions;
+  }
+
+  bool _spreadElementTypeMatches(InferredSpreadElement element) {
+    return _typeSchemaEnvironment.isSubtypeOf(
+      element.elementType.expressionType,
+      _elementType,
+    );
+  }
 
   void _translateElement(
     InferredElement element,
@@ -1254,10 +1289,20 @@ abstract class _NonConstListOrSetLiteralBuilder(
   ) {
     Expression value = element.expression;
 
-    final bool typeMatches = _typeSchemaEnvironment.isSubtypeOf(
-      element.elementType.expressionType,
-      _elementType,
-    );
+    final bool typeMatches = _spreadElementTypeMatches(element);
+    if (typeMatches) {
+      List<Expression>? expressions = _listLiteralExpressions(value);
+      if (expressions != null) {
+        expressions = _prepareListLiteralSpreadExpressions(
+          expressions: expressions,
+          body: body,
+        );
+        for (Expression expression in expressions) {
+          _addExpressionElement(expression, result, body);
+        }
+        return;
+      }
+    }
     if (typeMatches) {
       // If the type guarantees that all elements are of the required type, use
       // a single 'addAll' call instead of a for-loop with calls to 'add'.
@@ -2071,6 +2116,28 @@ class _NonConstSetLiteralBuilder(
           Nullability.nonNullable,
         ),
       );
+
+  @override
+  List<Expression> _prepareListLiteralSpreadExpressions({
+    required List<Expression> expressions,
+    required List<Statement> body,
+  }) {
+    // A list literal evaluates all of its expressions before its elements are
+    // added to the destination set. Cache the expressions so calls to
+    // `Set.add`, including user-defined `hashCode` and `==`, cannot be
+    // interleaved with their evaluation.
+    List<Expression> preparedExpressions = <Expression>[];
+    for (Expression expression in expressions) {
+      DeclaredVariable variable = _createVariable(expression, _elementType);
+      body.add(
+        extern.createVariableStatement(
+          extern.createVariableDeclaration(variable),
+        ),
+      );
+      preparedExpressions.add(_createVariableGet(variable));
+    }
+    return preparedExpressions;
+  }
 
   @override
   Expression _createAdd(Expression receiver, Expression argument) {

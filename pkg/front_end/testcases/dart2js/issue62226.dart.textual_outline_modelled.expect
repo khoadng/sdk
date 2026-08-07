@@ -1,0 +1,61 @@
+List<int> checkedListLiteralSpread() => <int>[
+  ...<dynamic>[1, 2],
+];
+
+List<int> setIntoList() => <int>[
+  ...<int>{1, 2},
+];
+
+List<num> initialListLiteralSpread() => <num>[
+  ...<int>[1, 2],
+  3,
+];
+
+List<num> listLiteralSpread(bool include) => <num>[
+  0,
+  if (include) ...<int>[1, 2],
+  3,
+];
+
+List<num> nullAwareListLiteralSpread() => <num>[
+  0,
+  ...?<int>[1, 2],
+  3,
+];
+
+Map<num, Object> initialMapLiteralSpreadRetained() => <num, Object>{
+  ...<int, String>{1: 'one', 2: 'two'},
+  3: 'three',
+};
+
+Map<num, Object> mapLiteralSpreadRetained(bool include) => <num, Object>{
+  0: 'zero',
+  if (include) ...<int, String>{1: 'one', 2: 'two'},
+  3: 'three',
+};
+
+Set<num> initialListLiteralSpreadIntoSet() => <num>{
+  ...<int>[value(1), value(2)],
+  3,
+};
+
+Set<num> initialSetLiteralSpreadRetained() => <num>{
+  ...<int>{1, 2},
+  3,
+};
+
+Set<num> listLiteralSpreadIntoSet(bool include) => <num>{
+  0,
+  if (include) ...<int>[value(1), value(2)],
+  3,
+};
+
+Set<num> setLiteralSpreadRetained(bool include) => <num>{
+  0,
+  if (include) ...<int>{1, 2},
+  3,
+};
+
+int value(int value) => value;
+
+void main() {}

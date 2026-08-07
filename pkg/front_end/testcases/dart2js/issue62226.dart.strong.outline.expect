@@ -1,0 +1,30 @@
+library;
+import self as self;
+import "dart:core" as core;
+
+static method listLiteralSpread(core::bool include) → core::List<core::num>
+  ;
+static method initialListLiteralSpread() → core::List<core::num>
+  ;
+static method nullAwareListLiteralSpread() → core::List<core::num>
+  ;
+static method value(core::int value) → core::int
+  ;
+static method listLiteralSpreadIntoSet(core::bool include) → core::Set<core::num>
+  ;
+static method initialListLiteralSpreadIntoSet() → core::Set<core::num>
+  ;
+static method setLiteralSpreadRetained(core::bool include) → core::Set<core::num>
+  ;
+static method initialSetLiteralSpreadRetained() → core::Set<core::num>
+  ;
+static method mapLiteralSpreadRetained(core::bool include) → core::Map<core::num, core::Object>
+  ;
+static method initialMapLiteralSpreadRetained() → core::Map<core::num, core::Object>
+  ;
+static method setIntoList() → core::List<core::int>
+  ;
+static method checkedListLiteralSpread() → core::List<core::int>
+  ;
+static method main() → void
+  ;

@@ -60,11 +60,17 @@ import "dart:_compact_hash" as _co;
 [735]      [735, -1] synthesized core::Iterator<core::String> :sync-for-iterator = [735] [735] [735] [735] args.{core::Iterable::iterator}{core::Iterator<core::String>};
 [718]      for (; [735] [735] [-1] [-1] :sync-for-iterator.{core::Iterator::moveNext}[-1](){() → core::bool}; ) {
 [730]        [730, -1] core::String s = [-1] [-1] [-1] [-1] :sync-for-iterator.{core::Iterator::current}{core::String};
-[744]        [744] [744] [-1] [-1] #t7.{core::List::addAll}{Invariant}[-1]([744] core::_GrowableList::_literal2 [-1]<core::String>([745] "${[747] [747] s}", [751] "${[754] [754] s}_2")){(core::Iterable<core::String>) → void};
+[-1]        {
+[745]          [745] [745] [-1] [-1] #t7.{core::List::add}{Invariant}[-1]([745] "${[747] [747] s}"){(core::String) → void};
+[751]          [751] [751] [-1] [-1] #t7.{core::List::add}{Invariant}[-1]([751] "${[754] [754] s}_2"){(core::String) → void};
+        }
       }
     }
-[766]    if([782] [782] [775] [775] [770] [770] args.{core::List::length}{core::int} =={core::num::==}{(core::Object) → core::bool} [785] [785] 42)
-[792]      [792] [792] [-1] [-1] #t7.{core::List::addAll}{Invariant}[-1]([792] core::_GrowableList::_literal3 [-1]<core::String>([793] "length", [803] "is", [809] "42")){(core::Iterable<core::String>) → void};
+[766]    if([782] [782] [775] [775] [770] [770] args.{core::List::length}{core::int} =={core::num::==}{(core::Object) → core::bool} [785] [785] 42) {
+[793]      [793] [793] [-1] [-1] #t7.{core::List::add}{Invariant}[-1]([793] "length"){(core::String) → void};
+[803]      [803] [803] [-1] [-1] #t7.{core::List::add}{Invariant}[-1]([803] "is"){(core::String) → void};
+[809]      [809] [809] [-1] [-1] #t7.{core::List::add}{Invariant}[-1]([809] "42"){(core::String) → void};
+    }
   } =>[662] [662] #t7;
 [823]  [823] [823] core::print [828]([829] fooList);
 [862]  [862, 869] core::Map<core::String, core::String> fooMap = [871] [871] block {
