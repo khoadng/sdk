@@ -94,6 +94,12 @@ class LibraryBuilder {
   /// The identifier used for unnamed local constructs such as prefixes.
   int _nextLocalReferenceId = 0;
 
+  /// Part files for which a library fragment has already been built.
+  ///
+  /// A duplicate directive still gets a [PartIncludeImpl], but its URI only
+  /// resolves to the source, so the library has at most one fragment per file.
+  final Set<FileState> _builtPartFiles = Set.identity();
+
   /// The fields that were speculatively created as [FieldFragmentImpl],
   /// but we want to clear [VariableFragmentImpl.constantInitializer2] for it
   /// if the class will not end up with a `const` constructor. We don't know
@@ -626,7 +632,7 @@ class LibraryBuilder {
     switch (state) {
       case PartIncludeWithFile():
         var includedPart = state.includedPart;
-        if (includedPart != null) {
+        if (includedPart != null && _builtPartFiles.add(includedPart.file)) {
           var partFile = includedPart.file;
           var partUnitNode = partFile.parse(
             performance: OperationPerformanceImpl('<root>'),

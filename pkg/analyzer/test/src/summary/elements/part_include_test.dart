@@ -468,6 +468,38 @@ library
 ''');
   }
 
+  test_parts_duplicateSource() async {
+    newFile('$testPackageLibPath/a.dart', r'''
+part of 'test.dart';
+''');
+
+    var library = await buildLibrary(r'''
+part 'a.dart';
+part 'foo/../a.dart';
+''');
+
+    checkElementText(library, r'''
+library
+  reference: <testLibrary>
+  fragments
+    #F0 <testLibraryFragment>
+      element: <testLibrary>
+      nextFragment: #F1
+      parts
+        part_0
+          uri: package:test/a.dart
+          partKeywordOffset: 0
+          unit: #F1
+        part_1
+          uri: source 'package:test/a.dart'
+          partKeywordOffset: 15
+    #F1 package:test/a.dart
+      element: <testLibrary>
+      enclosingFragment: #F0
+      previousFragment: #F0
+''');
+  }
+
   test_parts_nested() async {
     newFile('$testPackageLibPath/a.dart', r'''
 part of 'test.dart';

@@ -3390,6 +3390,25 @@ void bar() {}
 ''');
   }
 
+  test_getUnitElement_duplicatePart() async {
+    var a = newFile('$testPackageLibPath/a.dart', r'''
+part 'b.dart';
+part 'b.dart';
+''');
+
+    var b = newFile('$testPackageLibPath/b.dart', r'''
+part of 'a.dart';
+''');
+
+    var driver = driverFor(a);
+    driver.addFile2(a);
+    driver.addFile2(b);
+
+    var result = await driver.getUnitElement2(b);
+    result as UnitElementResult;
+    expect(result.fragment.source.fullName, b.path);
+  }
+
   test_getUnitElement_doesNotExist_afterResynthesized() async {
     var a = newFile('$testPackageLibPath/a.dart', r'''
 import 'package:test/b.dart';
