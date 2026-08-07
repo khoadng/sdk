@@ -295,12 +295,12 @@ abstract class AstCodeGenerator
       if (variableName != null && variableName.isNotEmpty) {
         b.localNames[local.index] = variableName;
       }
-      if (defaultValue == ParameterInfo.defaultValueSentinel) {
-        // The default value for this parameter differs between implementations
-        // within the same selector. This means that callers will pass the
-        // default value sentinel to indicate that the parameter is not given.
-        // The callee must check for the sentinel value and substitute the
-        // actual default value.
+      if (!isRequired && defaultValue == ParameterInfo.defaultValueSentinel) {
+        // The default value for this optional parameter differs between
+        // implementations within the same selector. This means that callers
+        // will pass the default value sentinel to indicate that the parameter
+        // is not given. The callee must check for the sentinel value and
+        // substitute the actual default value.
         //
         // NOTE: The default sentinel is a dummy instance of the wasm type of
         // the parameter in the function signature. This type may be a super
