@@ -90,9 +90,9 @@ _AsyncSuspendState _newAsyncSuspendState(
 _Future<T> _makeFuture<T>() => _Future<T>();
 
 @pragma("wasm:entry-point")
-void _awaitHelper(_AsyncSuspendState suspendState, Future operand) {
+void _awaitHelper<T>(_AsyncSuspendState suspendState, Future<T> operand) {
   operand.then(
-    (value) {
+    (T value) {
       suspendState._resume.call(suspendState, value, null, null);
     },
     onError: (exception, stackTrace) {
@@ -112,7 +112,7 @@ void _awaitHelperWithTypeCheck<T>(
     );
   }
   operand.then(
-    (Object? value) {
+    (T value) {
       suspendState._resume.call(suspendState, value, null, null);
     },
     onError: (exception, stackTrace) {

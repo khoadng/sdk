@@ -403,9 +403,7 @@ class AsyncStateMachineCodeGenerator extends StateMachineCodeGenerator {
       futureTypeParam = futureType.typeArguments[0];
     }
 
-    if (futureTypeParam != null) {
-      types.makeType(this, futureTypeParam);
-    }
+    types.makeType(this, futureTypeParam ?? awaitValueVar.type);
     b.local_get(_suspendStateLocal);
 
     final awaitHelper = runtimeType == null
